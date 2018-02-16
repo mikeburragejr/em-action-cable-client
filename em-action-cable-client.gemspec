@@ -11,7 +11,7 @@ Gem::Specification.new do |gem|
 	gem.has_rdoc = true
 	gem.files = Dir.glob ['lib/**/*', 'bin/*']
 	gem.test_files = Dir.glob 'test/**/*'
-	gem.executables = 'bin/deadkenny'
+	gem.executables = 'deadkenny'
 	gem.require_paths = %w(lib)
 	gem.version = '0.1.0'
 	gem.date = '2018-02-16'

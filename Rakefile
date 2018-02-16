@@ -3,6 +3,7 @@
 # frozen_string_literal: true
 #--
 require 'bundler/gem_tasks'
+Bundler::GemHelper.install_tasks
 require 'rake/testtask'
 require 'rdoc/task'
 require 'rubocop/rake_task'

@@ -1,6 +1,7 @@
 /.bundle
 /.idea
 /output
+/pkg
 /Gemfile.lock
 thumbs.db
 .DS_Store
