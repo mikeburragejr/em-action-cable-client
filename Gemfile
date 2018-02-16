@@ -10,6 +10,9 @@ gem 'ci_reporter', '>= 2.0.0', group: [:development, :test]
 gem 'ci_reporter_minitest', '>= 1.0.0', group: [:development, :test]
 gem 'rake', '>= 12.0', group: [:development, :test]
 gem 'rdoc', '>= 5.0', group: [:development, :test]
+
+# I'm done upgrading rubocop ever. Every single fucking update adds work.
 gem 'rubocop', '0.44.1', group: [:development, :test]
+
 gem 'simplecov-rcov', '>= 0.2.3', group: [:development, :test]
 gem 'websocket-eventmachine-client', '>= 1.2.0'

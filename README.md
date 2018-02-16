@@ -19,17 +19,17 @@ ac_client = EventMachine::ActionCable::Client.new 'ws://127.0.0.1:6060/ac-server
 	http_headers: {origin: 'http://localhost:6060'}
 channel1 = ac_client.add_channel 'ActionCableClientChannel'
 channel2 = ac_client.add_channel channel: 'ChatClientChannel', name: 'Bob'
-ac.on_subscribed do |chan|
-	ac.send_message({action: 'alert', data: 'TestAlert'})
-	ac.send_message({action: 'up'}, channel: channel1) if chan == channel1
+ac_client.on_subscribed do |chan|
+	ac_client.send_message({action: 'alert', data: "Subscribed to channel #{chan}"})
+	ac_client.send_message({action: 'send', message: 'Sup, Bob?'}, channel: channel2) if chan == channel2
 end
-ac.on_disconnected do
+ac_client.on_disconnected do
 	EventMachine::Timer.new(5) do
 		ac_client.connect
 	end
 end
 EM.run do
-	ac.connect
+	ac_client.connect
 end
 
 ```
