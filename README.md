@@ -17,8 +17,8 @@ require 'em-action-cable-client'
 
 ac_client = EventMachine::ActionCable::Client.new 'ws://127.0.0.1:6060/ac-server',
 	http_headers: {origin: 'http://localhost:6060'}
-channel1 = ac_client.add_channel 'ActionCableClientChannel'
-channel2 = ac_client.add_channel channel: 'ChatClientChannel', name: 'Bob'
+channel1 = ac_client.subscribe_to_channel 'ActionCableClientChannel'
+channel2 = ac_client.subscribe_to_channel channel: 'ChatClientChannel', name: 'Bob'
 ac_client.on_subscribed do |chan|
 	ac_client.send_message({action: 'alert', data: "Subscribed to channel #{chan}"})
 	ac_client.send_message({action: 'send', message: 'Sup, Bob?'}, channel: channel2) if chan == channel2
@@ -33,3 +33,9 @@ EM.run do
 end
 
 ```
+
+## TODO
+
+* More timers/timeout control - connect-to-welcome timeout, subscribing-to-subscribed timeout
+* Unsubscribed callback
+* Connection and subscription state accessors

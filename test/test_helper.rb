@@ -2,6 +2,7 @@
 # Copyright:: Copyright (c) 2018 Mike Burrage Jr
 # frozen_string_literal: true
 #--
+
 require 'simplecov'
 require 'simplecov-rcov'
 

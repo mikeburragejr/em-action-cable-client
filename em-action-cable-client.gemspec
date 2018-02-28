@@ -13,8 +13,8 @@ Gem::Specification.new do |gem|
 	gem.test_files = Dir.glob 'test/**/*'
 	gem.executables = 'deadkenny'
 	gem.require_paths = %w(lib)
-	gem.version = '0.1.0'
-	gem.date = '2018-02-16'
+	gem.version = '0.1.1'
+	gem.date = '2018-02-27'
 	gem.required_ruby_version = '>= 2.3.0'
 	gem.add_runtime_dependency 'websocket-eventmachine-client', '>= 1.2.0'
 end
