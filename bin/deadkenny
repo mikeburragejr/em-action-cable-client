@@ -9,3 +9,4 @@ rescue LoadError
 end
 
 EventMachine::ActionCable::CommandLineTool.new.process ARGV
+puts "OH MY GOD! THEY KILLED KENNY!\nYOU BASTARDS\n"
