@@ -3,6 +3,8 @@
 # frozen_string_literal: true
 #--
 
+require_relative './lib/em/action_cable/client_version.rb'
+
 Gem::Specification.new do |gem|
 	gem.name = 'em-action-cable-client'
 	gem.summary = 'ActionCable client (WebSockets) using EventMachine for ruby.'
@@ -11,10 +13,11 @@ Gem::Specification.new do |gem|
 	gem.has_rdoc = true
 	gem.files = Dir.glob ['lib/**/*', 'bin/*']
 	gem.test_files = Dir.glob 'test/**/*'
-	gem.executables = 'deadkenny'
+	gem.executables = 'dead-kenny'
 	gem.require_paths = %w(lib)
-	gem.version = '0.1.1'
-	gem.date = '2018-02-27'
+	gem.version = EventMachine::ActionCable::ClientVersion::VERSION
+	gem.date = EventMachine::ActionCable::ClientVersion::VERSION_DATE
 	gem.required_ruby_version = '>= 2.3.0'
+	gem.add_runtime_dependency 'docopt', '>= 0.6.0'
 	gem.add_runtime_dependency 'websocket-eventmachine-client', '>= 1.2.0'
 end

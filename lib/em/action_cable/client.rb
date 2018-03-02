@@ -75,6 +75,7 @@ module EventMachine
 				@_explicit_close = false
 				@_http_headers = http_headers
 				@_on_connected_block = nil
+				@_on_connect_failed_block = nil
 				@_on_custom_message_received_block = nil
 				@_on_disconnected_block = nil
 				@_on_pinged_block = nil
@@ -127,18 +128,22 @@ module EventMachine
 						transition_state ConnectionState::CONNECTED, @_on_connected_block, :on_open
 					end
 					@_connection.onclose do
-						logger.debug "#{self} #{ConnectionState::CONNECTING == @_state ? 'failed to connect' : 'closed'}."
+						f2c = ConnectionState::CONNECTING == @_state
+						logger.debug "#{self} #{f2c ? 'failed to connect' : 'closed'}."
 						@_channels.each { |channel| channel[:state] = SubscriptionState::UNSUBSCRIBED}
 						rm = !@_explicit_close ? :on_close : nil
 						@_explicit_close = false
-						transition_state ConnectionState::DISCONNECTED, @_on_disconnected_block, rm
+						transition_state ConnectionState::DISCONNECTED, f2c ? @_on_connect_failed_block : @_on_disconnected_block,
+							rm
 					end
 					@_connection.onerror do
-						logger.debug "#{self} #{ConnectionState::CONNECTING == @_state ? 'failed to connect' : 'closed (error)'}."
+						f2c = ConnectionState::CONNECTING == @_state
+						logger.debug "#{self} #{f2c ? 'failed to connect' : 'closed (error)'}."
 						@_channels.each { |channel| channel[:state] = SubscriptionState::UNSUBSCRIBED}
 						rm = !@_explicit_close ? :on_close : nil
 						@_explicit_close = false
-						transition_state ConnectionState::DISCONNECTED, @_on_disconnected_block, rm
+						transition_state ConnectionState::DISCONNECTED, f2c ? @_on_connect_failed_block : @_on_disconnected_block,
+							rm
 					end
 					@_connection.onmessage { |message, _type| on_received message}
 				else
@@ -155,6 +160,10 @@ module EventMachine
 			# Provide callback for when TCP/SSL connection is completed.
 			def on_connected(&block)
 				@_on_connected_block = block
+			end
+
+			def on_connect_failed(&block)
+				@_on_connect_failed_block = block
 			end
 
 			# Provide callback for when messages are received other than 'ping', 'welcome', and 'confirm_subscription'.

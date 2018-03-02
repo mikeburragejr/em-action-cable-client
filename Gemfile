@@ -15,4 +15,5 @@ gem 'rdoc', '>= 5.0', group: [:development, :test]
 gem 'rubocop', '0.44.1', group: [:development, :test]
 
 gem 'simplecov-rcov', '>= 0.2.3', group: [:development, :test]
+gem 'docopt', '>= 0.6.0'
 gem 'websocket-eventmachine-client', '>= 1.2.0'
