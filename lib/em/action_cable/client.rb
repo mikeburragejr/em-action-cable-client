@@ -41,15 +41,34 @@ module EventMachine
 				UNSUBSCRIBING = 3
 			end
 
+			URL_SCHEME_REGEX = %r{\A([a-z][a-z0-9+\-.]*)://}i
+
+			## Class members
 			@logger = ::Logger.new STDOUT
 			@logger.level = ::Logger::ERROR
 
+			## Class methods
 			def self.logger
 				return @logger
 			end
 
 			def self.logger=(logger)
 				@logger = logger
+			end
+
+			def self.normalize_websocket_url(url)
+				url_match = URL_SCHEME_REGEX.match url
+				if url_match.nil? # Not fully qualified.
+					url = 'ws://' + url
+				else
+					scheme = url_match[1].downcase
+					if ['https', 'http'].include?(scheme)
+						url = 'ws' + url[4..-1]
+					elsif !['ws', 'wss'].include?(scheme)
+						url = 'ws' + url[scheme.length..-1]
+					end
+				end
+				return url
 			end
 
 			def self.sort_hash(h)
@@ -67,9 +86,10 @@ module EventMachine
 			# * +http_headers+ _Hash_ HTTP headers to supply during connection attempts. If nil, 'origin' will be defaulted
 			# based on the uri.
 			# * +reconnect+ _Reconnect_
+			# * +welcome_timeout+ _Number?_ Timeout in seconds between attempted connects and welcome being received
 			# ==== Returns
 			# _Client_ self
-			def initialize(uri, http_headers: nil, reconnect: nil)
+			def initialize(uri, http_headers: nil, reconnect: nil, welcome_timeout: nil)
 				@_channels = [] # id, txt (version of the identifier), state
 				@_connection = nil
 				@_explicit_close = false
@@ -84,26 +104,36 @@ module EventMachine
 				@_on_welcomed_block = nil
 				@_reconnect = reconnect
 				@_reconnect.client = self if !@_reconnect.nil?
-				@_uri = uri
+				@_uri = self.class.normalize_websocket_url uri
 				@_state = ConnectionState::DISCONNECTED
+				@_state_timer = nil
+				@_welcome_timeout = welcome_timeout
 
+				u = URI.parse @_uri
 				if @_http_headers.nil?
 					# Assumptions about origin in the default case.
-					u = URI.parse uri
 					is_secure = ('wss' == u.scheme) || ('https' == u.scheme)
 					if is_secure
 						port_part = (u.port.nil? || (443 == u.port)) ? '' : ":#{u.port}"
 					else
 						port_part = (u.port.nil? || (80 == u.port)) ? '' : ":#{u.port}"
 					end
-					origin = (is_secure ? 'https' : 'http') + '://' + u.host + port_part
+					origin = "#{(is_secure ? 'https' : 'http')}://#{u.host}#{port_part}"
 					@_http_headers = {origin: origin}
 				end
 			end
 
+			def channel_state(channel)
+				channel_key = make_channel_key channel
+				return nil if channel_key.nil?
+				ch = @_channels.find { |el| (el[:id] == channel_key)}
+				return ch&.dig(:state)
+			end
+
 			def close
-				if !@_connection.nil?
+				if ![ConnectionState::DISCONNECTING, ConnectionState::DISCONNECTED].include?(@_connection)
 					@_explicit_close = true
+					@_state = ConnectionState::DISCONNECTING
 					@_connection.close
 				end
 				return self
@@ -122,13 +152,14 @@ module EventMachine
 				if @_connection.nil? || [ConnectionState::DISCONNECTING, ConnectionState::DISCONNECTED].include?(@_state)
 					# Somewhere down the chain 'headers' is being modified in place apparently (bug?), so dup it.
 					@_state = ConnectionState::CONNECTING
+					start_welcome_timer @_welcome_timeout
 					@_connection = WebSocket::EventMachine::Client.connect(uri: @_uri, headers: @_http_headers&.dup)
 					@_connection.onopen do
 						logger.debug "#{self} opened."
 						transition_state ConnectionState::CONNECTED, @_on_connected_block, :on_open
 					end
 					@_connection.onclose do
-						f2c = ConnectionState::CONNECTING == @_state
+						f2c = [ConnectionState::CONNECTING, ConnectionState::CONNECTED].include? @_state
 						logger.debug "#{self} #{f2c ? 'failed to connect' : 'closed'}."
 						@_channels.each { |channel| channel[:state] = SubscriptionState::UNSUBSCRIBED}
 						rm = !@_explicit_close ? :on_close : nil
@@ -137,7 +168,7 @@ module EventMachine
 							rm
 					end
 					@_connection.onerror do
-						f2c = ConnectionState::CONNECTING == @_state
+						f2c = [ConnectionState::CONNECTING, ConnectionState::CONNECTED].include? @_state
 						logger.debug "#{self} #{f2c ? 'failed to connect' : 'closed (error)'}."
 						@_channels.each { |channel| channel[:state] = SubscriptionState::UNSUBSCRIBED}
 						rm = !@_explicit_close ? :on_close : nil
@@ -268,6 +299,27 @@ module EventMachine
 				return self
 			end
 
+			def welcome_timeout
+				return @_welcome_timeout
+			end
+
+			def welcome_timeout=(val)
+				val = nil if !val.nil? && val <= 0
+				if !val.nil?
+					if !@_start_timer.nil? && (val != @_welcome_timeout)
+						start_welcome_timer((val <= @_welcome_timeout) ? 0 : (@_welcome_timeout - val))
+					end
+					@_welcome_timeout = val
+				else
+					if !@_start_timer.nil?
+						@_start_timer.cancel
+						@_start_timer = nil
+					end
+					@_welcome_timeout = nil
+				end
+				return @_welcome_timeout
+			end
+
 			private
 
 			# From user-specified (or network returned) channel identifying information - create a canonical form that can
@@ -326,6 +378,10 @@ module EventMachine
 					if ConnectionState::CONNECTED == @_state
 						logger.debug "#{self} welcome received. Autosubscribing..."
 						@_state = ConnectionState::WELCOMED
+						if !@_state_timer.nil?
+							@_state_timer.cancel
+							@_state_timer = nil
+						end
 						@_channels.each do |channel|
 							channel[:state] = SubscriptionState::SUBSCRIBING
 							@_connection.send({command: Command::SUBSCRIBE, identifier: channel[:txt]}.to_json)
@@ -348,7 +404,22 @@ module EventMachine
 				return self
 			end
 
+			def start_welcome_timer(secs)
+				@_state_timer.cancel if !@state_timer.nil?
+				if !secs.nil?
+					@_state_timer = EventMachine::Timer.new(secs) {@_connection.close}
+				end
+				return self
+			end
+
 			def transition_state(new_state, callback, reconnect_method)
+				case new_state
+				when ConnectionState::DISCONNECTED
+					if !@_state_timer.nil?
+						@_state_timer.cancel
+						@_state_timer = nil
+					end
+				end
 				@_state = new_state
 				safe_callback callback
 				@_reconnect.send(reconnect_method) if !@_reconnect.nil? && !reconnect_method.nil?

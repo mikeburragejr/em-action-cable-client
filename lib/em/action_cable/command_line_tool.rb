@@ -11,42 +11,61 @@ module EventMachine # :nodoc:
 		class Cli # :nodoc:
 			PROMPT = '> '
 
+			def initialize(client)
+				@client = client
+			end
+
 			def display_prompt
 				print PROMPT
 				return self
 			end
 
 			def process_command(line)
-				if line.start_with?('sub ', 'subscribe ')
-					m = /\Asub(scribe)? +(?<channel>.+)/.match line
+				if (m = /\Asub(scribe)? +(?<channel>.+)/.match(line))
 					channel = m['channel']
 					begin
 						channel = JSON.parse(channel) if channel.start_with?('{')
-						@client.subscribe_to_channel channel
 					rescue StandardError
-						@client.subscribe_to_channel channel
 					end
-				elsif line.start_with?('send ')
-					m = /\Asend +(?<message>.+)/.match line
+					@client.subscribe_to_channel channel
+				elsif (m = /\Achannel-state *(?<channel>.+)?/.match(line))
+					channel = m['channel']
+					begin
+						channel = JSON.parse(channel) if channel.start_with?('{')
+					rescue StandardError
+					end
+					cs = @client.channel_state channel
+					puts cs.nil? ? 'Channel not found.' : "Channel(#{channel}) state: #{cs}."
+				elsif (m = /\Asend +(?<message>.+)/.match(line))
 					msg = m['message']
 					begin
 						msg = JSON.parse(msg) if msg.start_with?('{')
-						@client.send_message msg
 					rescue StandardError
-						@client.send_message msg
+					end
+					@client.send_message msg
+				elsif (m = /\Awelcome-timeout *(?<val>.+)?/.match(line))
+					val = m['val']
+					if val.nil?
+						wts = @client.welcome_timeout.nil? ? 'NONE' : (@client.welcome_timeout.to_s + 'seconds')
+						puts "Welcome timeout: #{wts}."
+					else
+						@client.welcome_timeout = val.to_f
 					end
 				elsif ['close', 'disconnect'].include?(line)
 					@client.close
+				elsif ['state', 'get-state'].include?(line)
+					puts "Connection state: #{@client.state}"
 				elsif ['connect', 'reconnect', 'open'].include?(line)
 					@client.connect
-				elsif ['exit', 'quit'].include?(line)
+				elsif ['exit', 'quit', 'bye', 'adios', '\q'].include?(line)
 					EM.stop
-				else # if ['help', '?'].include?(line)
+				elsif !line.empty? # if ['help', '?'].include?(line)
 					puts "Commands:\n\n"
 					puts '  subscribe CHANNEL'
 					puts '  close'
 					puts '  open'
 					puts '  exit'
+					puts '  welcome-timeout VAL'
 					puts "  help\n\n"
 				end
 
@@ -103,12 +122,13 @@ DOCOPT
 					return is_bad ? 1 : 0
 				elsif options['--version']
 					puts "dead-kenny #{ClientVersion::VERSION} #{ClientVersion::VERSION_DATE}"
+					puts "\nOH MY GOD! THEY KILLED KENNY!\nYOU BASTARDS\n"
 					return 0
 				end
 
-				@cli = Cli.new
 				@client = EventMachine::ActionCable::Client.new options['<WEB_SOCKET_URI>'],
 					reconnect: EventMachine::ActionCable::Reconnect.default
+				@cli = Cli.new @client
 				Client.logger.formatter = proc do |severity, datetime, progname, msg|
 					"\n#{datetime} #{severity} -- #{progname} #{msg}"
 				end

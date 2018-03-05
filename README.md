@@ -41,6 +41,5 @@ end
 
 ## TODO
 
-* More timers/timeout control - connect-to-welcome timeout, subscribing-to-subscribed timeout
+* Channel timeouts when subscription fails
 * Unsubscribed callback
-* Connection and subscription state accessors
