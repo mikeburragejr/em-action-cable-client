@@ -5,6 +5,7 @@
 
 require 'logger'
 require 'json'
+require 'set'
 require 'uri'
 require 'websocket-eventmachine-client'
 
@@ -41,7 +42,11 @@ module EventMachine
 				UNSUBSCRIBING = 3
 			end
 
-			URL_SCHEME_REGEX = %r{\A([a-z][a-z0-9+\-.]*)://}i
+			# Assuming *authority* (host at least) is provided after this.
+			URL_SCHEME_REGEX = %r{\A(?<scheme>[a-z][a-z0-9+\-.]*)://}i
+			SECURE_URL_SCHEMES = Set['ftps', 'https', 'hxxps', 'rtsps', 'sftp', 'wss'].freeze
+			HTTP_SCHEMES = Set['https', 'http'].freeze
+			WEBSOCKET_SCHEMES = Set['wss', 'ws'].freeze
 
 			## Class members
 			@logger = ::Logger.new STDOUT
@@ -56,27 +61,20 @@ module EventMachine
 				@logger = logger
 			end
 
+			# Convert provided URL to ws/wss protocol.
 			def self.normalize_websocket_url(url)
 				url_match = URL_SCHEME_REGEX.match url
-				if url_match.nil? # Not fully qualified.
+				if url_match.nil? # ASSUMPTION: Not fully qualified.
 					url = 'ws://' + url
 				else
 					scheme = url_match[1].downcase
-					if ['https', 'http'].include?(scheme)
+					if HTTP_SCHEMES.include?(scheme)
 						url = 'ws' + url[4..-1]
-					elsif !['ws', 'wss'].include?(scheme)
+					elsif !WEBSOCKET_SCHEMES.include?(scheme)
 						url = 'ws' + url[scheme.length..-1]
 					end
 				end
 				return url
-			end
-
-			def self.sort_hash(h)
-				{}.tap do |h2|
-					h.sort.each do |k, v|
-						h2[k.to_s] = v.is_a?(Hash) ? self.sort_hash(v) : v
-					end
-				end
 			end
 
 			# Initialize a connection, but don't connect.
@@ -85,7 +83,7 @@ module EventMachine
 			# ==== Options
 			# * +http_headers+ _Hash_ HTTP headers to supply during connection attempts. If nil, 'origin' will be defaulted
 			# based on the uri.
-			# * +reconnect+ _Reconnect_
+			# * +reconnect+ _Reconnect?_ Reconnection algorithm.
 			# * +welcome_timeout+ _Number?_ Timeout in seconds between attempted connects and welcome being received
 			# ==== Returns
 			# _Client_ self
@@ -111,8 +109,8 @@ module EventMachine
 
 				u = URI.parse @_uri
 				if @_http_headers.nil?
-					# Assumptions about origin in the default case.
-					is_secure = ('wss' == u.scheme) || ('https' == u.scheme)
+					# Assumptions about origin in the default case (if it's using secure stuff, assume secure ws).
+					is_secure = SECURE_URL_SCHEMES.include? u.scheme.downcase
 					if is_secure
 						port_part = (u.port.nil? || (443 == u.port)) ? '' : ":#{u.port}"
 					else
@@ -333,7 +331,7 @@ module EventMachine
 				if channel.is_a?(String)
 					channel_key = {'channel' => channel}
 				elsif channel.is_a?(Hash)
-					channel_key = self.class.sort_hash(channel)
+					channel_key = sort_hash(channel)
 				else
 					channel_key = channel.dup
 				end
@@ -402,6 +400,14 @@ module EventMachine
 					logger.error "#{self} callback exception. #{e.message}\n#{e.backtrace}"
 				end
 				return self
+			end
+
+			def sort_hash(h)
+				{}.tap do |h2|
+					h.sort.each do |k, v|
+						h2[k.to_s] = v.is_a?(Hash) ? sort_hash(v) : v
+					end
+				end
 			end
 
 			def start_welcome_timer(secs)

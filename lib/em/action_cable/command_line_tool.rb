@@ -61,7 +61,9 @@ module EventMachine # :nodoc:
 					EM.stop
 				elsif !line.empty? # if ['help', '?'].include?(line)
 					puts "Commands:\n\n"
-					puts '  subscribe CHANNEL'
+					puts '  sub(scribe) CHANNEL'
+					puts '  send MESSAGE'
+					puts '  channel-state CHANNEL'
 					puts '  close'
 					puts '  open'
 					puts '  exit'

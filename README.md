@@ -4,12 +4,12 @@
 
 This is a Ruby ActionCable/Websocket client library utilizing the
 [EventMachine](https://github.com/eventmachine/eventmachine) framework (asynchronous) that handles:
+
 * Default functionality supporting common RoR defaults (origin header, automatic subscription).
 * Multiple channel subscription and bi-directional messaging.
 * Interruptible and reconnection (that works).
 * Automatic subscription to multiple channels.
-* Connection and channels can be setup (for later auto-subscription) BEFORE the EventMachine run loop
-is started.
+* Connection and channels can be setup (for later auto-subscription) BEFORE the EventMachine run loop is started.
 
 ## See also
 

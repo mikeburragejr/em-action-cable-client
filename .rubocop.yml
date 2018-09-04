@@ -2,8 +2,36 @@ AllCops:
   Exclude:
     - 'output/**/*'
   TargetRubyVersion: 2.3
+Layout/EmptyLineAfterMagicComment:
+  Enabled: false
+Layout/AlignArray:
+  Enabled: false # No need... there are commas
+Layout/AlignHash:
+  Enabled: false # No need... there are commas
+Layout/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+Layout/FirstParameterIndentation:
+  Enabled: false
+Layout/IndentHeredoc:
+  Enabled: false
+Layout/IndentationWidth:
+  Width: 1
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: false
+Layout/MultilineMethodCallIndentation:
+  Enabled: false
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
+Layout/SpaceInsideBlockBraces:
+  EnforcedStyle: no_space
+Layout/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+Layout/Tab:
+  Enabled: false # Amazing how tabs let various developers render 1, 2, 4, 8 or however many spaces they want
 Lint/HandleExceptions:
   Enabled: false
+Lint/ReturnInVoidContext:
+  Enabled: false # This is not even correct
 Lint/UselessAccessModifier:
   Enabled: false
 Metrics/AbcSize:
@@ -28,27 +56,27 @@ Metrics/ParameterLists:
   Enabled: false
 Metrics/PerceivedComplexity:
   Max: 38 # default is 7
+Naming/AccessorMethodName:
+  Enabled: false
+Naming/PredicateName:
+  Enabled: false # I don't agree with this naming convention. Is/Has/Can are useful. is_annoyed? has_annoyed?
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
 Performance/RedundantMatch:
   Enabled: false
 Performance/RedundantMerge:
   Enabled: false
 Performance/StringReplacement:
   Enabled: false
-Style/AccessorMethodName:
-  Enabled: false
-Style/AlignArray:
-  Enabled: false # No need... there are commas
-Style/AlignHash:
-  Enabled: false # No need... there are commas
-Style/AlignParameters:
-  EnforcedStyle: with_fixed_indentation
 Style/BlockComments:
   Enabled: false
 Style/ClassVars:
   Enabled: false
 Style/ConditionalAssignment:
   Enabled: false
-Style/FirstParameterIndentation:
+Style/EmptyMethod:
+  Enabled: false
+Style/ExpandPathArguments:
   Enabled: false
 Style/GuardClause:
   Enabled: false # Often no difference in readability
@@ -56,14 +84,8 @@ Style/IdenticalConditionalBranches:
   Enabled: false
 Style/IfUnlessModifier:
   Enabled: false # Often no difference in readability
-Style/IndentationWidth:
-  Width: 1
-Style/MultilineMethodCallBraceLayout:
+Style/InverseMethods:
   Enabled: false
-Style/MultilineMethodCallIndentation:
-  Enabled: false
-Style/MultilineOperationIndentation:
-  EnforcedStyle: indented
 Style/MultilineTernaryOperator:
   Enabled: false # Often no difference in readability
 Style/NegatedIf:
@@ -76,25 +98,25 @@ Style/NumericPredicate:
   Enabled: false # Seriously?
 Style/ParallelAssignment:
   Enabled: false # Totally useful when swapping 2 values
-Style/PredicateName:
-  Enabled: false # I don't agree with this naming convention. Is/Has/Can are useful. is_annoyed? has_annoyed?
+Style/PercentLiteralDelimiters:
+  Enabled: false
 Style/RedundantReturn:
   Enabled: false # Return is actually clearer to read
 Style/RedundantSelf:
   Enabled: false # Often used for clarity
+Style/RescueStandardError:
+  Enabled: false
 Style/SafeNavigation:
   Enabled: false
 Style/SignalException:
   Enabled: false # Default changed between rubocop versions. Buh bye!
-Style/SpaceInsideBlockBraces:
-  EnforcedStyle: no_space
-Style/SpaceInsideHashLiteralBraces:
-  EnforcedStyle: no_space
-Style/Tab:
-  Enabled: false # Amazing how tabs let various developers render 1, 2, 4, 8 or however many spaces they want
+Style/SymbolArray:
+  Enabled: false # Seriously?
 Style/TernaryParentheses:
   Enabled: false # Often used for clarity
 Style/TrivialAccessors:
   Enabled: false
 Style/WordArray:
   Enabled: false # Often no difference in readability
+Style/YodaCondition:
+  Enabled: false # I prefer them
