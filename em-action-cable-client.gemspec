@@ -10,7 +10,6 @@ Gem::Specification.new do |gem|
 	gem.summary = 'ActionCable client (WebSockets) using EventMachine for ruby.'
 	gem.authors = ['Mike Burrage Jr']
 	gem.email = 'root@localhost' # Send yourself mail. Spammers.
-	gem.has_rdoc = true
 	gem.files = Dir.glob ['lib/**/*', 'bin/*']
 	gem.test_files = Dir.glob 'test/**/*'
 	gem.executables = 'dead-kenny'

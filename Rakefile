@@ -65,6 +65,10 @@ end
 
 task doc: ['doc:all']
 
+task clean: nil do
+	['output', 'pkg'].each { |d| rm_rf d}
+end
+
 task clobber: ['doc:clobber'] do
 	rm_rf output_dir
 end

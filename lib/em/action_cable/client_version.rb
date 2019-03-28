@@ -6,8 +6,8 @@
 module EventMachine
 	module ActionCable # :nodoc:
 		class ClientVersion # :nodoc:
-			VERSION = '0.2.0'
-			VERSION_DATE = '2018-06-14'
+			VERSION = '0.3.0'
+			VERSION_DATE = '2019-03-28'
 		end
 	end
 end

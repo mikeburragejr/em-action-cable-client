@@ -6,7 +6,7 @@ require 'rubygems'
 begin
 	require 'em-action-cable-client'
 rescue LoadError
-	require File.realpath(File.expand_path('../../lib/em_action_cable_client.rb', __FILE__))
+	require_relative '../lib/em-action-cable-client'
 end
 
 EventMachine::ActionCable::CommandLineTool.new.process ARGV
