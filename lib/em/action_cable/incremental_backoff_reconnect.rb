@@ -6,7 +6,7 @@
 require_relative './reconnect.rb'
 
 module EventMachine
-	module ActionCable # :nodoc:
+	module ActionCable
 		# Reconnection algorithm that initially retries after a random amount of time and then incrementally increases
 		# the delay for subsequent reconnects up to a max.
 		class IncrementalBackoffReconnect < Reconnect

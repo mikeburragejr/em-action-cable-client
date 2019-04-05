@@ -151,11 +151,14 @@ module EventMachine
 					# Somewhere down the chain 'headers' is being modified in place apparently (bug?), so dup it.
 					@_state = ConnectionState::CONNECTING
 					start_welcome_timer @_welcome_timeout
+
 					@_connection = WebSocket::EventMachine::Client.connect(uri: @_uri, headers: @_http_headers&.dup)
+
 					@_connection.onopen do
 						logger.debug "#{self} opened."
 						transition_state ConnectionState::CONNECTED, @_on_connected_block, :on_open
 					end
+
 					@_connection.onclose do
 						f2c = [ConnectionState::CONNECTING, ConnectionState::CONNECTED].include? @_state
 						logger.debug "#{self} #{f2c ? 'failed to connect' : 'closed'}."
@@ -165,6 +168,7 @@ module EventMachine
 						transition_state ConnectionState::DISCONNECTED, f2c ? @_on_connect_failed_block : @_on_disconnected_block,
 							rm
 					end
+
 					@_connection.onerror do
 						f2c = [ConnectionState::CONNECTING, ConnectionState::CONNECTED].include? @_state
 						logger.debug "#{self} #{f2c ? 'failed to connect' : 'closed (error)'}."
@@ -174,6 +178,7 @@ module EventMachine
 						transition_state ConnectionState::DISCONNECTED, f2c ? @_on_connect_failed_block : @_on_disconnected_block,
 							rm
 					end
+
 					@_connection.onmessage { |message, _type| on_received message}
 				else
 					logger.debug "#{self} connect() ignored in current state #{@_state}."
@@ -231,7 +236,8 @@ module EventMachine
 			# This DOES NOT queue messages.
 			# Message should likely include 'action' attribute.
 			# ==== Parameters
-			# *message* _Hash_
+			# *message* _Hash_ Object sent to the ActionCable server. This should include 'action' attribute which is the
+			# METHOD called on the server-side channel.
 			# ==== Options
 			# *channel* _Hash_|_String_
 			# ==== Returns

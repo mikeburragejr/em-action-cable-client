@@ -2,6 +2,7 @@
 # Copyright:: Copyright (c) 2018 Mike Burrage Jr
 # frozen_string_literal: true
 #--
+
 source 'https://rubygems.org'
 fail 'Ruby should be >= 2.3' unless RUBY_VERSION.to_f >= 2.3
 
