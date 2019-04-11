@@ -17,4 +17,5 @@ gem 'rdoc', '>= 5.0', group: [:development, :test]
 gem 'rubocop', '0.57.2', group: [:development, :test]
 
 gem 'simplecov-rcov', '>= 0.2.3', group: [:development, :test]
-gem 'websocket-eventmachine-client', '>= 1.2.0'
+gem 'websocket-eventmachine-client', '1.2.0', git: 'https://github.com/imanel/websocket-eventmachine-client.git',
+	ref: '1ab5dd6'
