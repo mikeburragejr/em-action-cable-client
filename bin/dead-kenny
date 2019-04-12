@@ -1,12 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 #--
-
 require 'rubygems'
-begin
-	require 'em-action-cable-client'
-rescue LoadError
-	require_relative '../lib/em-action-cable-client'
-end
+lib = File.expand_path '../lib', __FILE__
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'em-action-cable-client'
 
 EventMachine::ActionCable::CommandLineTool.new.process ARGV

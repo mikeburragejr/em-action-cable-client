@@ -2,7 +2,6 @@
 # Copyright:: Copyright (c) 2018 Mike Burrage Jr
 # frozen_string_literal: true
 #--
-
 require 'logger'
 require 'json'
 require 'set'
@@ -78,15 +77,12 @@ module EventMachine
 			end
 
 			# Initialize a connection, but don't connect.
-			# ==== Parameters
-			# * +uri+ _String_ URI to connect client to.
-			# ==== Options
-			# * +http_headers+ _Hash_ HTTP headers to supply during connection attempts. If nil, 'origin' will be defaulted
-			# based on the uri.
-			# * +reconnect+ _Reconnect?_ Reconnection algorithm.
-			# * +welcome_timeout+ _Number?_ Timeout in seconds between attempted connects and welcome being received
-			# ==== Returns
-			# _Client_ self
+			# @param [String] uri URI to connect client to.
+			# @param [Hash] http_headers HTTP headers to supply during connection attempts. If nil, 'origin' will be defaulted
+			#   based on the uri.
+			# @param [Reconnect?] reconnect Reconnection algorithm.
+			# @param [Number?] welcome_timeout Timeout in seconds between attempted connects and welcome being received
+			# @return [Client] self
 			def initialize(uri, http_headers: nil, reconnect: nil, welcome_timeout: nil)
 				@_channels = [] # id, txt (version of the identifier), state
 				@_connection = nil
@@ -142,10 +138,8 @@ module EventMachine
 			end
 
 			# Connect to the server and proceed with automatic subscription to all channels, after the welcome.
-			# ==== Returns
-			# _Client_ self
-			# ==== Restrictions
-			# * May be called only while the EventMachine/reactor run loop is running (EM::reactor_running? == true).
+			# May be called only while the EventMachine/reactor run loop is running (EM::reactor_running? == true).
+			# @return [Client] self
 			def connect
 				if @_connection.nil? || [ConnectionState::DISCONNECTING, ConnectionState::DISCONNECTED].include?(@_state)
 					# Somewhere down the chain 'headers' is being modified in place apparently (bug?), so dup it.
@@ -235,13 +229,10 @@ module EventMachine
 
 			# This DOES NOT queue messages.
 			# Message should likely include 'action' attribute.
-			# ==== Parameters
-			# *message* _Hash_ Object sent to the ActionCable server. This should include 'action' attribute which is the
-			# METHOD called on the server-side channel.
-			# ==== Options
-			# *channel* _Hash_|_String_
-			# ==== Returns
-			# Number of messages sent (0 if no channels in the SUBSCRIBED state).
+			# @param [Hash] message Object sent to the ActionCable server. This should include 'action' attribute which is the
+			#   METHOD called on the server-side channel.
+			# @param [Hash or String] channel
+			# @return [Integer] Number of messages sent (0 if no channels in the SUBSCRIBED state).
 			def send_message(message, channel: nil)
 				messages_sent = 0
 				channel_key = make_channel_key channel
@@ -262,14 +253,12 @@ module EventMachine
 			end
 
 			# Subscribe to a channel (or indicate the desire to do so when the connection is established).
-			# A string can be used (ie 'TestChannel') or a Hash can be provided (ie {channel: 'TestChannel', myid: 123}).
+			# A string can be used (ie 'TestChannel') or a Hash can be provided (ie { channel: 'TestChannel', myid: 123 }).
 			# If not in a WELCOMED state, this is a channel that will be subscribed to once welcomed.
-			# ==== Parameters
-			# * +channel+ _String_|_Hash_ Channel name, or hash containing 'channel' attribute and other keys that will
-			# be added to the subscription request (and all other requests on the channel). Eg - {channel: 'ChatChannel',
-			# id: 'Bob'}
-			# ==== Returns
-			# _Hash_ identifier for the channel
+			# @param [String or Hash] channel Channel name, or hash containing 'channel' attribute and other keys that will
+			#   be added to the subscription request (and all other requests on the channel). Eg - { channel: 'ChatChannel',
+			#   id: 'Bob' }
+			# @return [Hash] identifier for the channel
 			def subscribe_to_channel(channel)
 				channel_key = make_channel_key channel
 				if !@_channels.any? { |ch| ch[:id] == channel_key}
@@ -328,10 +317,8 @@ module EventMachine
 
 			# From user-specified (or network returned) channel identifying information - create a canonical form that can
 			# be matched against @_channels->:id
-			# ==== Parameters
-			# * +channel+ _String_|_Hash_ Channel name or identifying hash.
-			# ==== Returns
-			# _Hash_ Canonical identifier for the channel
+			# @param [String or Hash] channel Channel name or identifying hash.
+			# @return [Hash] Canonical identifier for the channel
 			def make_channel_key(channel)
 				return nil if channel.nil?
 				if channel.is_a?(String)

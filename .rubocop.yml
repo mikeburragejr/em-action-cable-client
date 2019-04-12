@@ -74,6 +74,8 @@ Style/ClassVars:
   Enabled: false
 Style/ConditionalAssignment:
   Enabled: false
+Style/Documentation:
+  Enabled: false
 Style/EmptyMethod:
   Enabled: false
 Style/ExpandPathArguments:

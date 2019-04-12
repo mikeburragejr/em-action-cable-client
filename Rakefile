@@ -5,7 +5,8 @@
 require 'bundler/gem_tasks'
 Bundler::GemHelper.install_tasks
 require 'rake/testtask'
-require 'rdoc/task'
+require 'yard'
+require 'yard/rake/yardoc_task'
 require 'rubocop/rake_task'
 require 'ci/reporter/rake/minitest'
 
@@ -48,17 +49,15 @@ RuboCop::RakeTask.new
 
 ## Doc
 
-RDoc::Task.new do |rdoc|
-	rdoc.generator = 'bootstrap'
-	rdoc.main = Dir['README.{md,rdoc}'].first
-	rdoc.rdoc_dir = File.expand_path(ENV['RDOC_PATH'] || 'output/doc/rdoc', root_dir)
-	rdoc.rdoc_files.include rdoc.main, 'lib/em/action_cable/*.rb'
+YARD::Rake::YardocTask.new do |t|
+	t.files = ['lib/**/*.rb']
+	t.options = ['--output-dir', doc_dir]
 end
 
 namespace :doc do
-	task all: ['rerdoc']
+	task all: ['yard']
 
-	task clobber: ['clobber_rdoc'] do
+	task clobber: nil do
 		rm_rf doc_dir, verbose: false
 	end
 end

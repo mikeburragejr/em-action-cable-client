@@ -4,9 +4,9 @@
 #--
 
 module EventMachine
-	module ActionCable # :nodoc:
+	module ActionCable
 		# Factory for reconnection algorithms.
-		class Reconnect # :nodoc:
+		class Reconnect
 			def self.default
 				return self.incremental_backoff
 			end

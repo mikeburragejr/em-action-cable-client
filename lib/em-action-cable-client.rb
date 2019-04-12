@@ -3,4 +3,4 @@
 # frozen_string_literal: true
 #--
 
-Dir[File.expand_path('../em/action_cable', __FILE__) + '/*.rb'].each { |file| require file}
+Dir[File.expand_path('../em/action_cable', __FILE__) + '/*.rb'].sort.each { |file| require file}

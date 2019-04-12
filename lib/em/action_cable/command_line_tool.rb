@@ -2,13 +2,12 @@
 # Copyright:: Copyright (c) 2018 Mike Burrage Jr
 # frozen_string_literal: true
 #--
-
 require 'docopt'
 require 'eventmachine'
 
-module EventMachine # :nodoc:
-	module ActionCable # :nodoc:
-		class Cli # :nodoc:
+module EventMachine
+	module ActionCable
+		class Cli
 			PROMPT = '> '
 
 			def initialize(client)
