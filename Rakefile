@@ -74,4 +74,4 @@ end
 
 task default: ['ci:all']
 
-task full: ['ci:all', 'rubocop', 'doc:all']
+task precommit: ['ci:all', 'rubocop', 'doc:all']

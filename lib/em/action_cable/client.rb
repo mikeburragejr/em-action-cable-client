@@ -47,17 +47,12 @@ module EventMachine
 			HTTP_SCHEMES = Set['https', 'http'].freeze
 			WEBSOCKET_SCHEMES = Set['wss', 'ws'].freeze
 
-			## Class members
+			# @!group Class members
 			@logger = ::Logger.new STDOUT
 			@logger.level = ::Logger::ERROR
 
-			## Class methods
-			def self.logger
-				return @logger
-			end
-
-			def self.logger=(logger)
-				@logger = logger
+			class << self
+				attr_accessor :logger
 			end
 
 			# Convert provided URL to ws/wss protocol.
@@ -389,7 +384,7 @@ module EventMachine
 			def safe_callback(callback, *args)
 				begin
 					!callback.nil? && callback.call(*args)
-				rescue => e
+				rescue StandardError => e
 					logger.error "#{self} callback exception. #{e.message}\n#{e.backtrace}"
 				end
 				return self
