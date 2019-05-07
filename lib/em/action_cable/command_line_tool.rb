@@ -75,7 +75,7 @@ module EventMachine
 			end
 		end
 
-		module KeyboardHandler # :nodoc:
+		module KeyboardHandler
 			def initialize(client = nil, cli = nil)
 				@client = client
 				@cli = cli
@@ -97,7 +97,7 @@ module EventMachine
 			end
 		end
 
-		class CommandLineTool # :nodoc:
+		class CommandLineTool
 			def process(argv)
 				doc = <<DOCOPT
 Usage:
