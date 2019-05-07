@@ -1,9 +1,0 @@
-/.bundle
-/.idea
-/.yardoc
-/Gemfile.lock
-/output
-/pkg
-/vendor
-thumbs.db
-.DS_Store

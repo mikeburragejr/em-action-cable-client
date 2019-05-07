@@ -1,9 +1,0 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
-#--
-require 'rubygems'
-lib = File.expand_path '../lib', __FILE__
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'em-action-cable-client'
-
-EventMachine::ActionCable::CommandLineTool.new.process ARGV
